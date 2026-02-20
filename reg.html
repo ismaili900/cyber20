@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usajili wa Mtumiaji</title>
+    <!-- Bootstrap CSS -->
+    <link href="bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center">Fomu ya Usajili wa Mtumiaji</h2>
+        <form action="register.php" method="post">
+            <div class="form-group">
+                <label for="username">Jina la Mtumiaji:</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Nenosiri:</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+
+            <div class="form-group">
+                <label for="ou">Organizational Unit (OU):</label>
+                <input type="text" class="form-control" id="ou" name="ou" value="Students" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Jiandikishe</button>
+        </form>
+    </div>
+
+    <!-- Bootstrap JS, Popper.js, and jQuery -->
+    <script src="jquery-3.5.1.slim.min.js"></script>
+    <script src="popper.min.js"></script>
+    <script src="bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,51 +1,46 @@
 <?php
-// statement LDAP
-$ldap_server = "ldap://192.168.1.100";
-$ldap_dn = "ou=users,dc=naweza,dc=ac,dc=tz"; 
-$admin_user = "cn=administrator,dc=naweza,dc=ac,dc=tz"; 
-$admin_pass = "Admin2025";
+session_start();
+include 'config.php'; // Kuunganisha fail la config.php
 
-// connect na LDAP
-$conn = ldap_connect($ldap_server);
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $username = isset($_POST['username']) ? $_POST['username'] : '';
+    $password = isset($_POST['password']) ? $_POST['password'] : '';
+    $ou = isset($_POST['ou']) ? $_POST['ou'] : '';
 
-if (!$conn) {
-    die("fail to connect LDAP.");
-}
+    // Unganisha unapomaliza kudurusu LDAP
+    if (!ldap_bind($conn, $ldap_admin, $ldap_admin_password)) {
+        die("Kosa: Hujaweza kuungana na seva ya LDAP. Taarifa za kuingia si sahihi.");
+    }
 
-ldap_set_option($conn, LDAP_OPT_PROTOCOL_VERSION, 3);
-ldap_bind($conn, $admin_user, $admin_pass);
+    // Fanya utafutaji
+    $search_base = "OU={$ou},{$base_dn}"; // Jina la utafutaji
+    $search_filter = "(uid={$username})";
 
-//form
-$username = $_POST['username'];
-$email = $_POST['email'];
-$password = $_POST['password'];
+    $search_result = ldap_search($conn, $search_base, $search_filter);
+    if ($search_result === false) {
+        die("Kosa: Utafutaji ulikwama.");
+    }
 
-// Kuangalia kama jina la mtumiaji lipo tayari
-$filter = "(uid=$username)";
-$result = ldap_search($conn, $ldap_dn, $filter);
-$entries = ldap_get_entries($conn, $result);
+    $entries = ldap_get_entries($conn, $search_result);
+    if ($entries['count'] > 0) {
+        die("Kosa: Jina la mtumiaji tayari lipo.");
+    }
 
-if ($entries['count'] > 0) {
-    echo "Jina la mtumiaji lipo tayari.";
-} else {
-    // Kuunda mtumiaji mpya
-    $new_user_dn = "uid=$username,$ldap_dn";
-    $new_user_info = [
-        'cn' => $username,
-        'sn' => $username,
-        'uid' => $username,
-        'userPassword' => $password,
-        'mail' => $email,
-        'objectClass' => ['inetOrgPerson', 'posixAccount']
+    // Andika mtumiaji mpya
+    $dn = "uid={$username},OU={$ou},{$base_dn}"; // Ujumbe wa mtumiaji wa LDAP
+    $new_user = [
+        "cn" => $username,
+        "sn" => $username,
+        "uid" => $username,
+        "userpassword" => $password,
+        "objectClass" => ["top", "person", "organizationalPerson", "inetOrgPerson"]
     ];
 
-    // Kuongeza mtumiaji kwenye LDAP
-    if (ldap_add($conn, $new_user_dn, $new_user_info)) {
-        echo "Mtumiaji amesajiliwa kwa mafanikio.";
-    } else {
-        echo "Kuhifadhi mtumiaji kumeshindikana.";
+    if (!ldap_add($conn, $dn, $new_user)) {
+        die("Kosa: Hujaweza kuongeza mtumiaji.");
     }
-}
 
-ldap_unbind($conn);
+    echo "Usajili umefanikiwa!";
+    ldap_close($conn);
+}
 ?>
